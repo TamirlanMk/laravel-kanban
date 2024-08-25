@@ -60,7 +60,7 @@ export default {
         },
 
         toggleShow() {
-            this.showReady = !this.showReady;
+            this.showReadyTodos = !this.showReadyTodos;
         },
 
         loadTodos() {

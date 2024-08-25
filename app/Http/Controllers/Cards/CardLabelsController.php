@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Cards;
 
+use App\Exceptions\Card\MaximumLabelsException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\BoardLabelStoreRequest;
 use App\Http\Resources\BoardLabel\BoardLabelResource;
@@ -9,6 +10,7 @@ use App\Models\BoardLabel;
 use App\Models\Card;
 use App\Services\Board\BoardLabelService;
 use App\Services\Card\CardLabelService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
 class CardLabelsController extends Controller
@@ -32,11 +34,17 @@ class CardLabelsController extends Controller
         );
     }
 
-    public function attach(Card $card, BoardLabel $label): BoardLabelResource
+    public function attach(Card $card, BoardLabel $label): JsonResponse|BoardLabelResource
     {
-        $this->cardLabelService->attach($card, $label);
+        try {
+            $this->cardLabelService->attach($card, $label);
 
-        return BoardLabelResource::make($label);
+            return BoardLabelResource::make($label);
+        } catch (MaximumLabelsException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode());
+        }
     }
 
     public function detach(Card $card, BoardLabel $label)

@@ -17,8 +17,6 @@ import ConfirmationModal from "@/Components/Modals/ConfirmationModal.vue";
 import CardDescription from "@/Pages/Boards/Partials/Card/CardDescription.vue";
 import Skeleton from "@/Components/Skeleton/SkeletonWrapper.vue";
 import SkeletonText from "@/Components/Skeleton/SkeletonText.vue";
-import AddAttachmentForm from "@/Pages/Boards/Partials/Card/AddAttachmentForm.vue";
-import CreateAttachmentModal from "@/Pages/Boards/Partials/Modals/CreateAttachmentModal.vue";
 import CardAttachments from "@/Pages/Boards/Partials/Card/CardAttachments.vue";
 import CardModalHeader from "@/Pages/Boards/Partials/Card/CardModalHeader.vue";
 import CardTodo from "@/Components/Todo/CardTodo.vue";
@@ -34,17 +32,17 @@ import FadeOutTransition from "@/Components/Transitions/FadeOutTransition.vue";
 import {route} from "../../../../../../vendor/tightenco/ziggy/src/js/index.js";
 import {addCardLabel, removeCardLabel} from "@/Api/card/labels.js";
 import {getCard, updateCard} from "@/Api/card/card.js";
+import CardAttachmentsDropdown from "@/Components/Attachments/CardAttachmentsDropdown.vue";
 
 export default {
     components: {
+        CardAttachmentsDropdown,
         CardHeaderLabels,
         CardLabelsDropdown,
         CardLabelForm,
         CardTodo,
         CardModalHeader,
         CardAttachments,
-        CreateAttachmentModal,
-        AddAttachmentForm,
         AppDropdown,
         Dropdown,
         FadeOutTransition,
@@ -92,7 +90,7 @@ export default {
         },
 
         isLoading(v) {
-            console.log(v)
+            // console.log(v)
         }
     },
 
@@ -113,7 +111,7 @@ export default {
             await this.$nextTick();
 
             if (load) {
-                this.loadCard()
+                await this.loadCard()
             }
         },
 
@@ -142,16 +140,6 @@ export default {
             });
         },
 
-        addAttachment() {
-            this.close(false);
-            this.$refs.attachmentModal.open()
-        },
-
-        closeAttachment() {
-            this.$refs.attachmentModal.close();
-            this.open(false)
-        },
-
         updateAttachmentsCount(attachments) {
             if (this.card) {
                 this.card.attachments_count = attachments ? attachments?.length : 0;
@@ -162,15 +150,16 @@ export default {
             this.$refs.todos.openForm();
         },
 
-        onLabelAdd(label) {
-            addCardLabel(this.card?.id, label?.id)
-                .then(() => {
-                    let isAdded = this.card.labels.findIndex(item => item.id === label.id);
+        onAttachmentAdded(attachment) {
+            this.$refs.attachments.add(attachment)
+        },
 
-                    if (isAdded < 0) {
-                        this.card.labels.push(label)
-                    }
-                })
+        onLabelAdded(label) {
+            let isAdded = this.card.labels.findIndex(item => item.id === label.id);
+
+            if (isAdded < 0) {
+                this.card.labels.push(label)
+            }
         },
 
         onLabelRemove(label) {
@@ -204,7 +193,12 @@ export default {
 </script>
 
 <template>
-    <dialog-modal ref="modal" :min-height="'250'" max-width="4xl" @close="close">
+    <dialog-modal
+        ref="modal"
+        :min-height="'250'"
+        max-width="4xl"
+        @close="close"
+    >
         <template #title v-if="!card">
             <div class="relative">
                 <skeleton-heading/>
@@ -245,7 +239,7 @@ export default {
                         />
 
                         <card-attachments
-                            v-if="card?.attachments_count > 0"
+                            ref="attachments"
                             :card-id="cardId"
                             @change="updateAttachmentsCount"
                         />
@@ -266,12 +260,13 @@ export default {
                         <card-labels-dropdown
                             :card-id="card?.id"
                             :board-id="column?.board_id"
-                            @labelAdded="onLabelAdd"
+                            @labelAdded="onLabelAdded"
                         />
 
-                        <app-button @click.stop="addAttachment" variant="info" class="w-full">
-                            Add Attachment
-                        </app-button>
+                        <card-attachments-dropdown
+                            :card-id="cardId"
+                            @attachmentAdded="onAttachmentAdded"
+                        />
 
                         <app-button @click.stop="addTodo" variant="info" class="w-full">
                             Add Todo
@@ -309,11 +304,4 @@ export default {
             </app-button>
         </template>
     </confirmation-modal>
-
-    <create-attachment-modal
-        ref="attachmentModal"
-        :cardId="cardId"
-        @create="closeAttachment"
-        @close="closeAttachment"
-    />
 </template>

@@ -19,7 +19,7 @@ export default {
 
     data() {
         return {
-            open: false
+            isOpen: false
         }
     },
 
@@ -46,13 +46,13 @@ export default {
     },
 
     methods: {
-        onOpen() {
-            this.open = true;
+        open() {
+            this.isOpen = true;
             this.$emit('opened');
         },
 
-        onClose() {
-            this.open = false;
+        close() {
+            this.isOpen = false;
             this.$emit('closed');
         }
     }
@@ -61,12 +61,12 @@ export default {
 
 <template>
     <div class="relative">
-        <div @click="onOpen">
+        <div @click="open">
             <slot name="trigger"/>
         </div>
 
         <!-- Full Screen Dropdown Overlay -->
-        <div v-show="open" class="fixed inset-0 z-40" @click="onClose"/>
+        <div v-show="isOpen" class="fixed inset-0 z-40" @click="close"/>
 
         <transition
             enter-active-class="transition ease-out duration-200"
@@ -77,7 +77,7 @@ export default {
             leave-to-class="transform opacity-0 scale-95"
         >
             <div
-                v-show="open"
+                v-show="isOpen"
                 class="absolute z-50 mt-2 rounded-md shadow-lg right-0 bg-white dark:bg-gray-700 p-2 ring-1 ring-black ring-opacity-5 pb-5"
                 :class="[alignmentClasses, contentClasses]"
             >

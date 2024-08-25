@@ -29,7 +29,7 @@ export default {
     },
 
     emits: {
-        change: null
+        change: null,
     },
 
     props: {
@@ -51,8 +51,11 @@ export default {
     },
 
     watch: {
-        attachments(value) {
-            this.$emit('change', value);
+        attachments: {
+            handler(value) {
+                this.$emit('change', value);
+            },
+            deep: true
         }
     },
 
@@ -65,6 +68,10 @@ export default {
                     this.attachments = data;
                     this.isLoading = false;
                 });
+        },
+
+        add(attachment) {
+            this.attachments.push(attachment);
         },
 
         toggleShow() {

@@ -23,7 +23,5 @@ export const deleteCardAttachment = (attachmentId) => {
     return axios.delete(route('cards.attachments.delete', {card_attachment: attachmentId}))
         .then((res) => {
             return res.data;
-        }).catch(e => {
-            throw e;
         });
 }

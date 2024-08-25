@@ -2,14 +2,22 @@
 
 namespace App\Services\Card;
 
+use App\Exceptions\Card\MaximumLabelsException;
 use App\Models\BoardLabel;
 use App\Models\Card;
 
 class CardLabelService
 {
+    /**
+     * @throws MaximumLabelsException
+     */
     public function attach(Card $card, BoardLabel $label): BoardLabel
     {
-        $card->labels()->sync($label,  false);
+        if ($card->labels()->count() >= 5) {
+            throw new MaximumLabelsException('The maximum of labels has been reached.', 422);
+        }
+
+        $card->labels()->sync($label, false);
 
         return $label;
     }

@@ -1,18 +1,20 @@
 <script>
+import {PlusIcon, TrashIcon} from "lucide-vue-next";
+import {deleteBoardLabel, getBoardLabels} from "@/Api/board/labels.js";
+
+import AppLabel from "@/Components/Labels/AppLabel.vue";
+import LabelList from "@/Components/Labels/LabelList.vue";
 import AppButton from "@/Components/Button/AppButton.vue";
 import AppHeading from "@/Components/Heading/AppHeading.vue";
 import AppDropdown from "@/Components/Dropdown/AppDropdown.vue";
-
-import {PlusIcon, TrashIcon} from "lucide-vue-next";
-import {createBoardLabel, deleteBoardLabel, getBoardLabels} from "@/Api/board/labels.js";
-import AppLabel from "@/Components/Labels/AppLabel.vue";
 import CardLabelForm from "@/Components/Labels/CardLabelForm.vue";
-import {addCardLabel, removeCardLabel} from "@/Api/card/labels.js";
-import LabelList from "@/Components/Labels/LabelList.vue";
 import FadeTransition from "@/Components/Transitions/FadeTransition.vue";
+import InputError from "@/Components/InputError.vue";
+import {addCardLabel} from "@/Api/card/labels.js";
 
 export default {
     components: {
+        InputError,
         FadeTransition,
         LabelList,
         PlusIcon,
@@ -44,11 +46,10 @@ export default {
         return {
             labels: [],
             showForm: false,
-            isLoading: false
+            isLoading: false,
+            errorMessage: null
         }
     },
-
-    watch: {},
 
     methods: {
         loadLabels() {
@@ -59,7 +60,19 @@ export default {
         },
 
         addLabel(label) {
-            this.$emit('labelAdded', label)
+            addCardLabel(this.cardId, label?.id)
+                .then(() => {
+                    this.$emit('labelAdded', label)
+                })
+                .catch(({response}) => {
+                    if(response.status === 422) {
+                        this.errorMessage = response.data.message;
+
+                        setTimeout(() => {
+                            this.errorMessage = null
+                        }, 5000)
+                    }
+                })
         },
 
         deleteLabel(label) {
@@ -113,6 +126,8 @@ export default {
                 <fade-transition mode="out-in">
                     <template v-if="!showForm">
                         <div>
+                            <input-error :message="errorMessage"/>
+
                             <label-list
                                 v-if="labels.length > 0"
                                 class="mt-3"
